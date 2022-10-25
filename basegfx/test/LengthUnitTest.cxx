@@ -114,6 +114,12 @@ public:
 
         CPPUNIT_ASSERT_EQUAL(1_cm, aRange.getWidth());
         CPPUNIT_ASSERT_EQUAL(10_mm, aRange.getHeight());
+
+        aRange.shift(1_cm, 1_cm);
+        CPPUNIT_ASSERT_EQUAL(2_cm, aRange.getMinX());
+        CPPUNIT_ASSERT_EQUAL(3_cm, aRange.getMinY());
+        CPPUNIT_ASSERT_EQUAL(3_cm, aRange.getMaxX());
+        CPPUNIT_ASSERT_EQUAL(40_mm, aRange.getMaxY());
     }
 
     void testInTuple()
