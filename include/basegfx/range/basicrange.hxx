@@ -278,6 +278,34 @@ namespace basegfx
             }
         }
 
+        void setSize(T nSize)
+        {
+            if (isEmpty())
+                return;
+
+            if (nSize >= Traits::neutral())
+                mnMaximum = mnMinimum + nSize;
+            else
+                reset();
+        }
+
+        void setPosition(T nPosition)
+        {
+            if (isEmpty())
+                return;
+
+            if (mnMinimum == mnMaximum)
+            {
+                mnMinimum = nPosition;
+                mnMaximum = nPosition;
+            }
+            else
+            {
+                mnMaximum = nPosition + (mnMaximum - mnMinimum);
+                mnMinimum = nPosition;
+            }
+        }
+
 #if defined _MSC_VER && defined(_M_ARM64)
 #pragma warning(push)
 #pragma warning(disable: 4723) /* ignore: warning for C4723 on windows arm64 build */

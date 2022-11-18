@@ -144,7 +144,30 @@ namespace basegfx
         {
             return maRange.clamp(fValue);
         }
+
+        void shift(double fDeltaX)
+        {
+            maRange.shift(fDeltaX);
+        }
+
+        void setSize(double fSize)
+        {
+            maRange.setSize(fSize);
+        }
+
+        void setPosition(double fPosition)
+        {
+            maRange.setPosition(fPosition);
+        }
     };
+
+    /** Write to char stream */
+    template<typename charT, typename traits>
+    inline std::basic_ostream<charT, traits>& operator<<(
+        std::basic_ostream<charT, traits>& stream, const B1DRange& range)
+    {
+        return stream << "[" << range.getMinimum() << ", " << range.getMaximum() << "]";
+    }
 
 } // end of namespace basegfx
 

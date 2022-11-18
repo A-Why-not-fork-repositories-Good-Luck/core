@@ -25,72 +25,115 @@
 
 namespace basegfx
 {
-class b1Xrange : public CppUnit::TestFixture
+class B1DRangeTest : public CppUnit::TestFixture
 {
 public:
-    template <class Type> void implCheck()
+    void checkIntervalAxioms()
     {
         // test interval axioms
         // (http://en.wikipedia.org/wiki/Interval_%28mathematics%29)
-        Type aRange;
+        B1DRange aRange;
         CPPUNIT_ASSERT_MESSAGE("default ctor - empty range", aRange.isEmpty());
-        CPPUNIT_ASSERT_MESSAGE("center - get cop-out value since range is empty",
-                               aRange.getCenter() == 0);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("center - get cop-out value since range is empty", 0.0,
+                                     aRange.getCenter());
 
         // degenerate interval
         aRange.expand(1);
+        CPPUNIT_ASSERT_EQUAL(B1DRange(1.0, 1.0), aRange);
         CPPUNIT_ASSERT_MESSAGE("degenerate range - still, not empty!", !aRange.isEmpty());
-        CPPUNIT_ASSERT_MESSAGE("degenerate range - size of 0", aRange.getRange() == 0);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("degenerate range - size of 0", 0.0, aRange.getRange());
         CPPUNIT_ASSERT_MESSAGE("same value as degenerate range - is inside range",
-                               aRange.isInside(1));
-        CPPUNIT_ASSERT_MESSAGE("center - must be the single range value", aRange.getCenter() == 1);
+                               aRange.isInside(1.0));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("center - must be the single range value", 1.0,
+                                     aRange.getCenter());
 
         // proper interval
-        aRange.expand(2);
-        CPPUNIT_ASSERT_MESSAGE("proper range - size of 1", aRange.getRange() == 1);
+        aRange.expand(2.0);
+        CPPUNIT_ASSERT_EQUAL(B1DRange(1.0, 2.0), aRange);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("proper range - size of 1", 1.0, aRange.getRange());
         CPPUNIT_ASSERT_MESSAGE("smaller value of range - is inside *closed* range",
                                aRange.isInside(1));
         CPPUNIT_ASSERT_MESSAGE("larger value of range - is inside *closed* range",
                                aRange.isInside(2));
 
         // center for proper interval that works for ints, too
-        aRange.expand(3);
-        CPPUNIT_ASSERT_MESSAGE("center - must be half of the range", aRange.getCenter() == 2);
+        aRange.expand(3.0);
+        CPPUNIT_ASSERT_EQUAL(B1DRange(1.0, 3.0), aRange);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("center - must be half of the range", 2.0, aRange.getCenter());
+    }
 
-        // check overlap
-        Type aRange2(0, 1);
+    void checkOverlap()
+    {
+        B1DRange aRange(1.0, 3.0);
+        B1DRange aRange2(0.0, 1.0);
+
         CPPUNIT_ASSERT_MESSAGE("range overlapping *includes* upper bound",
                                aRange.overlaps(aRange2));
         CPPUNIT_ASSERT_MESSAGE("range overlapping *includes* upper bound, but only barely",
                                !aRange.overlapsMore(aRange2));
 
-        Type aRange3(0, 2);
+        B1DRange aRange3(0.0, 2.0);
         CPPUNIT_ASSERT_MESSAGE("range overlapping is fully overlapping now",
                                aRange.overlapsMore(aRange3));
+    }
 
-        // check intersect
-        Type aRange4(3, 4);
-        aRange.intersect(aRange4);
+    void checkIntersect()
+    {
+        B1DRange aRange(1.0, 3.0);
+        B1DRange aRange2(3.0, 4.0);
+        aRange.intersect(aRange2);
         CPPUNIT_ASSERT_MESSAGE("range intersection is yielding empty range!", !aRange.isEmpty());
 
-        Type aRange5(5, 6);
-        aRange.intersect(aRange5);
+        B1DRange aRange3(5.0, 6.0);
+        aRange.intersect(aRange3);
         CPPUNIT_ASSERT_MESSAGE("range intersection is yielding nonempty range!", aRange.isEmpty());
     }
 
-    void check() { implCheck<B1DRange>(); }
+    void checkShift()
+    {
+        B1DRange aRange(1.0, 3.0);
+        aRange.shift(2.0);
+        CPPUNIT_ASSERT_EQUAL(B1DRange(3.0, 5.0), aRange);
 
-    // Change the following lines only, if you add, remove or rename
-    // member functions of the current class,
-    // because these macros are need by auto register mechanism.
+        B1DRange aRange2(-1.0, -3.0);
+        aRange2.shift(2.0);
+        CPPUNIT_ASSERT_EQUAL(B1DRange(1.0, -1.0), aRange2);
+    }
 
-    CPPUNIT_TEST_SUITE(b1Xrange);
-    CPPUNIT_TEST(check);
+    void checkSetSize()
+    {
+        B1DRange aRange(1.0, 3.0);
+        aRange.setSize(5.0);
+        CPPUNIT_ASSERT_EQUAL(B1DRange(1.0, 6.0), aRange);
+
+        B1DRange aRange2(-1.0, -3.0);
+        aRange2.setSize(3.0);
+        CPPUNIT_ASSERT_EQUAL(B1DRange(-3.0, 0.0), aRange2);
+    }
+
+    void checkSetPosition()
+    {
+        B1DRange aRange(1.0, 3.0);
+        aRange.setPosition(7.0);
+        CPPUNIT_ASSERT_EQUAL(B1DRange(7.0, 9.0), aRange);
+
+        B1DRange aRange2(-1.0, -3.0);
+        aRange2.setPosition(-1.0);
+        CPPUNIT_ASSERT_EQUAL(B1DRange(-1.0, 1.0), aRange2);
+    }
+
+    CPPUNIT_TEST_SUITE(B1DRangeTest);
+    CPPUNIT_TEST(checkIntervalAxioms);
+    CPPUNIT_TEST(checkOverlap);
+    CPPUNIT_TEST(checkIntersect);
+    CPPUNIT_TEST(checkShift);
+    CPPUNIT_TEST(checkSetSize);
+    CPPUNIT_TEST(checkSetPosition);
     CPPUNIT_TEST_SUITE_END();
-}; // class b1Xrange
+};
 
 } // namespace basegfx
 
-CPPUNIT_TEST_SUITE_REGISTRATION(basegfx::b1Xrange);
+CPPUNIT_TEST_SUITE_REGISTRATION(basegfx::B1DRangeTest);
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */
