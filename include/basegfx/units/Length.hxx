@@ -29,55 +29,6 @@ struct LengthTraits
     typedef Length DifferenceType;
 };
 
-typedef basegfx::Range2D<gfx::Length, gfx::LengthTraits> Range2DL;
-typedef basegfx::Tuple2D<gfx::Length> Tuple2DL;
-typedef basegfx::Size2D<gfx::Length> Size2DL;
-
-namespace length
-{
-static inline Size2DL fromSizeHmm(Size const& rSize)
-{
-    auto width = Length::hmm(rSize.getWidth());
-    auto height = Length::hmm(rSize.getHeight());
-    return Size2DL(width, height);
-}
-
-static inline Size toSizeHmm(Size2DL const& rTuple)
-{
-    auto width = rTuple.getWidth().as_hmm();
-    auto height = rTuple.getHeight().as_hmm();
-    return Size(width, height);
-}
-
-static inline Range2DL fromRectangleHmm(tools::Rectangle const& rRectangle)
-{
-    auto left = Length::hmm(rRectangle.Left());
-    auto top = Length::hmm(rRectangle.Top());
-    auto right = Length::hmm(rRectangle.Right());
-    auto bottom = Length::hmm(rRectangle.Bottom());
-    return Range2DL(left, top, right, bottom);
-}
-
-static inline basegfx::B2DRange toB2DRange2DHmm(Range2DL const& rRange2D)
-{
-    auto left = rRange2D.getMinX().as_hmm();
-    auto top = rRange2D.getMinY().as_hmm();
-    auto right = rRange2D.getMaxX().as_hmm();
-    auto bottom = rRange2D.getMaxY().as_hmm();
-    return basegfx::B2DRange(left, top, right, bottom);
-}
-
-static inline tools::Rectangle toRectangleHmm(Range2DL const& rRange2D)
-{
-    auto left = rRange2D.getMinX().as_hmm();
-    auto top = rRange2D.getMinY().as_hmm();
-    auto right = rRange2D.getMaxX().as_hmm();
-    auto bottom = rRange2D.getMaxY().as_hmm();
-    return tools::Rectangle(left, top, right, bottom);
-}
-
-} // end namespace length
-
 } // end namespace gfx
 
 constexpr gfx::Length operator"" _emu(unsigned long long value) { return gfx::Length::emu(value); }
@@ -134,3 +85,65 @@ inline std::basic_ostream<charT, traits>& operator<<(std::basic_ostream<charT, t
     return stream << rLength.raw() << " (twip=" << rLength.as_twip() << ", hmm=" << rLength.as_hmm()
                   << ")";
 }
+
+namespace gfx
+{
+typedef basegfx::Range2D<gfx::Length, gfx::LengthTraits> Range2DL;
+typedef basegfx::Tuple2D<gfx::Length> Tuple2DL;
+typedef basegfx::Size2D<gfx::Length> Size2DL;
+
+namespace length
+{
+static inline Size2DL fromSizeHmm(Size const& rSize)
+{
+    if (rSize.IsEmpty())
+        return Size2DL(0_mm, 0_mm);
+    auto width = Length::hmm(rSize.getWidth());
+    auto height = Length::hmm(rSize.getHeight());
+    return Size2DL(width, height);
+}
+
+static inline Size toSizeHmm(Size2DL const& rSize)
+{
+    auto width = rSize.getWidth().as_hmm();
+    auto height = rSize.getHeight().as_hmm();
+    return Size(width, height);
+}
+
+static inline Range2DL fromRectangleHmm(tools::Rectangle const& rRectangle)
+{
+    if (rRectangle.IsWidthEmpty() && rRectangle.IsHeightEmpty())
+        return Range2DL();
+
+    auto left = Length::hmm(rRectangle.Left());
+    auto top = Length::hmm(rRectangle.Top());
+    auto right = Length::hmm(rRectangle.Right());
+    auto bottom = Length::hmm(rRectangle.Bottom());
+
+    return Range2DL(left, top, right, bottom);
+}
+
+static inline basegfx::B2DRange toB2DRange2DHmm(Range2DL const& rRange2D)
+{
+    if (rRange2D.isEmpty())
+        return basegfx::B2DRange();
+    auto left = rRange2D.getMinX().as_hmm();
+    auto top = rRange2D.getMinY().as_hmm();
+    auto right = rRange2D.getMaxX().as_hmm();
+    auto bottom = rRange2D.getMaxY().as_hmm();
+    return basegfx::B2DRange(left, top, right, bottom);
+}
+
+static inline tools::Rectangle toRectangleHmm(Range2DL const& rRange2D)
+{
+    if (rRange2D.isEmpty())
+        return tools::Rectangle();
+    auto left = rRange2D.getMinX().as_hmm();
+    auto top = rRange2D.getMinY().as_hmm();
+    auto right = rRange2D.getMaxX().as_hmm();
+    auto bottom = rRange2D.getMaxY().as_hmm();
+    return tools::Rectangle(left, top, right, bottom);
+}
+
+} // end namespace gfx
+} // end namespace length
