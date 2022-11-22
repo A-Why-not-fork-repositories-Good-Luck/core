@@ -120,6 +120,18 @@ public:
         CPPUNIT_ASSERT_EQUAL(3_cm, aRange.getMinY());
         CPPUNIT_ASSERT_EQUAL(3_cm, aRange.getMaxX());
         CPPUNIT_ASSERT_EQUAL(40_mm, aRange.getMaxY());
+
+        aRange.setSize(5_cm, 2_cm);
+        CPPUNIT_ASSERT_EQUAL(2_cm, aRange.getMinX());
+        CPPUNIT_ASSERT_EQUAL(3_cm, aRange.getMinY());
+        CPPUNIT_ASSERT_EQUAL(7_cm, aRange.getMaxX());
+        CPPUNIT_ASSERT_EQUAL(5_cm, aRange.getMaxY());
+
+        aRange.setPosition(0_cm, 0_cm);
+        CPPUNIT_ASSERT_EQUAL(0_cm, aRange.getMinX());
+        CPPUNIT_ASSERT_EQUAL(0_cm, aRange.getMinY());
+        CPPUNIT_ASSERT_EQUAL(5_cm, aRange.getMaxX());
+        CPPUNIT_ASSERT_EQUAL(2_cm, aRange.getMaxY());
     }
 
     void testInTuple()
@@ -162,17 +174,60 @@ public:
         CPPUNIT_ASSERT_EQUAL(true, aSize == aSize + gfx::Size2DL(0_emu, 0_emu));
     }
 
-    void testConversionToRectanle()
+    void testConversionToRectangle()
     {
-        tools::Rectangle aRectangle(10, 20, 110, 120);
-        gfx::Range2DL aRange = gfx::length::fromRectangleHmm(aRectangle);
-        CPPUNIT_ASSERT_EQUAL(10_hmm, aRange.getMinX());
-        CPPUNIT_ASSERT_EQUAL(20_hmm, aRange.getMinY());
-        CPPUNIT_ASSERT_EQUAL(110_hmm, aRange.getMaxX());
-        CPPUNIT_ASSERT_EQUAL(120_hmm, aRange.getMaxY());
+        {
+            tools::Rectangle aEmpty;
+            gfx::Range2DL aEmptyRange = gfx::length::fromRectangleHmm(aEmpty);
+            CPPUNIT_ASSERT_EQUAL(true, aEmptyRange.isEmpty());
 
-        tools::Rectangle aRectangleConverted = gfx::length::toRectangleHmm(aRange);
-        CPPUNIT_ASSERT_EQUAL(aRectangle, aRectangleConverted);
+            tools::Rectangle aRectangle(10, 20, 110, 120);
+            gfx::Range2DL aRange = gfx::length::fromRectangleHmm(aRectangle);
+            CPPUNIT_ASSERT_EQUAL(10_hmm, aRange.getMinX());
+            CPPUNIT_ASSERT_EQUAL(20_hmm, aRange.getMinY());
+            CPPUNIT_ASSERT_EQUAL(110_hmm, aRange.getMaxX());
+            CPPUNIT_ASSERT_EQUAL(120_hmm, aRange.getMaxY());
+
+            tools::Rectangle aRectangleConverted = gfx::length::toRectangleHmm(aRange);
+            CPPUNIT_ASSERT_EQUAL(aRectangle, aRectangleConverted);
+        }
+        {
+            tools::Rectangle aRectangle(10, 20, 110, 120);
+            gfx::Range2DL aRange = gfx::length::fromRectangleHmm(aRectangle);
+
+            aRectangle.Move(1000, 1000);
+            aRange.shift(1000_hmm, 1000_hmm);
+            CPPUNIT_ASSERT_EQUAL(aRectangle, gfx::length::toRectangleHmm(aRange));
+        }
+        {
+            tools::Rectangle aRectangle(10, 20, 110, 120);
+            gfx::Range2DL aRange = gfx::length::fromRectangleHmm(aRectangle);
+
+            aRectangle.SetSize(Size(201, 201));
+            aRange.setSize(200_hmm, 200_hmm);
+            CPPUNIT_ASSERT_EQUAL(aRectangle, gfx::length::toRectangleHmm(aRange));
+        }
+        {
+            tools::Rectangle aRectangle(10, 20, 110, 120);
+            gfx::Range2DL aRange = gfx::length::fromRectangleHmm(aRectangle);
+
+            aRectangle.SetPos(Point(500, 500));
+            aRange.setPosition(500_hmm, 500_hmm);
+            CPPUNIT_ASSERT_EQUAL(aRectangle, gfx::length::toRectangleHmm(aRange));
+        }
+        {
+            tools::Rectangle aRectangle(Point(0, 0), Size(0, 31));
+            CPPUNIT_ASSERT_EQUAL(tools::Long(0), aRectangle.Left());
+            CPPUNIT_ASSERT_EQUAL(tools::Long(0), aRectangle.Top());
+            CPPUNIT_ASSERT_EQUAL(tools::Long(0), aRectangle.GetWidth());
+            CPPUNIT_ASSERT_EQUAL(tools::Long(31), aRectangle.GetHeight());
+
+            gfx::Range2DL aRange = gfx::length::fromRectangleHmm(aRectangle);
+            CPPUNIT_ASSERT_EQUAL(0_hmm, aRange.getMinX());
+            CPPUNIT_ASSERT_EQUAL(0_hmm, aRange.getMinY());
+            CPPUNIT_ASSERT_EQUAL(0_hmm, aRange.getMaxX());
+            CPPUNIT_ASSERT_EQUAL(30_hmm, aRange.getMaxY());
+        }
     }
 
     CPPUNIT_TEST_SUITE(LengthTest);
@@ -180,7 +235,7 @@ public:
     CPPUNIT_TEST(testDivision);
     CPPUNIT_TEST(testInRange);
     CPPUNIT_TEST(testInTuple);
-    CPPUNIT_TEST(testConversionToRectanle);
+    CPPUNIT_TEST(testConversionToRectangle);
     CPPUNIT_TEST_SUITE_END();
 };
 
