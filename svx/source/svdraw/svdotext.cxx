@@ -70,6 +70,7 @@ std::unique_ptr<sdr::contact::ViewContact> SdrTextObj::CreateObjectSpecificViewC
 
 SdrTextObj::SdrTextObj(SdrModel& rSdrModel)
     : SdrAttrObj(rSdrModel)
+    , maRectangle(0_hmm, 0_hmm, 0_hmm, 0_hmm)
     , mpEditingOutliner(nullptr)
     , meTextKind(SdrObjKind::Text)
     , maTextEditOffset(Point(0, 0))
@@ -87,6 +88,7 @@ SdrTextObj::SdrTextObj(SdrModel& rSdrModel)
 
 SdrTextObj::SdrTextObj(SdrModel& rSdrModel, SdrTextObj const & rSource)
     : SdrAttrObj(rSdrModel, rSource)
+    , maRectangle(rSource.maRectangle)
     , mpEditingOutliner(nullptr)
     , meTextKind(rSource.meTextKind)
     , maTextEditOffset(Point(0, 0))
@@ -101,7 +103,6 @@ SdrTextObj::SdrTextObj(SdrModel& rSdrModel, SdrTextObj const & rSource)
     // #i25616#
     mbSupportTextIndentingOnLineWidthChange = true;
 
-    maRectangle = rSource.maRectangle;
     maGeo = rSource.maGeo;
     maTextSize = rSource.maTextSize;
 
@@ -156,6 +157,7 @@ SdrTextObj::SdrTextObj(SdrModel& rSdrModel, const tools::Rectangle& rNewRect)
 
 SdrTextObj::SdrTextObj(SdrModel& rSdrModel, SdrObjKind eNewTextKind)
     : SdrAttrObj(rSdrModel)
+    , maRectangle(0_hmm, 0_hmm, 0_hmm, 0_hmm)
     , mpEditingOutliner(nullptr)
     , meTextKind(eNewTextKind)
     , maTextEditOffset(Point(0, 0))
@@ -201,8 +203,6 @@ SdrTextObj::~SdrTextObj()
 
 void SdrTextObj::FitFrameToTextSize()
 {
-    ImpJustifyRect(maRectangle);
-
     SdrText* pText = getActiveText();
     if(pText==nullptr || !pText->GetOutlinerParaObject())
         return;
@@ -310,6 +310,31 @@ bool SdrTextObj::IsAutoGrowHeight() const
         }
     }
     return bRet;
+}
+
+tools::Rectangle const& SdrTextObj::getRectangle() const
+{
+    maRectangle.getRectangle();
+}
+
+void SdrTextObj::setRectangle(tools::Rectangle const& rRectangle)
+{
+    maRectangle.setRectangle(rRectangle);
+}
+
+void SdrTextObj::setRectangleSize(sal_Int32 nWidth, sal_Int32 nHeight)
+{
+    maRectangle.setSize(nWidth, nHeight);
+}
+
+void SdrTextObj::moveRectangle(sal_Int32 nXDelta, sal_Int32 nYDelta)
+{
+    maRectangle.move(nXDelta, nYDelta);
+}
+
+void SdrTextObj::moveRectanglePosition(sal_Int32 nX, sal_Int32 nY)
+{
+    maRectangle.setPosition(nX, nY);
 }
 
 bool SdrTextObj::IsAutoGrowWidth() const

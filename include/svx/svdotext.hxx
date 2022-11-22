@@ -32,6 +32,7 @@
 #include <drawinglayer/primitive2d/Primitive2DContainer.hxx>
 #include <memory>
 #include <vector>
+#include <basegfx/utils/RectangleWrapper.hxx>
 
 #include <com/sun/star/drawing/TextFitToSizeType.hpp>
 
@@ -165,32 +166,17 @@ protected:
     // The "aRect" is also the rect of RectObj and CircObj.
     // When mbTextFrame=true the text will be formatted into this rect
     // When mbTextFrame=false the text will be centered around its middle
-    tools::Rectangle maRectangle;
+    gfx::RectangleWrapper maRectangle;
 
-    tools::Rectangle const& getRectangle() const
-    {
-        return maRectangle;
-    }
+    tools::Rectangle const& getRectangle() const;
 
-    void setRectangle(tools::Rectangle const& rRectangle)
-    {
-        maRectangle = rRectangle;
-    }
+    void setRectangle(tools::Rectangle const& rRectangle);
 
-    void setRectangleSize(sal_Int32 nWidth, sal_Int32 nHeight)
-    {
-        maRectangle.SetSize(Size(nWidth, nHeight));
-    }
+    void setRectangleSize(sal_Int32 nWidth, sal_Int32 nHeight);
 
-    void moveRectangle(sal_Int32 nXDelta, sal_Int32 nYDelta)
-    {
-        maRectangle.Move(nXDelta, nYDelta);
-    }
+    void moveRectangle(sal_Int32 nXDelta, sal_Int32 nYDelta);
 
-    void moveRectanglePosition(sal_Int32 nX, sal_Int32 nY)
-    {
-        maRectangle.SetPos(Point(nX, nY));
-    }
+    void moveRectanglePosition(sal_Int32 nX, sal_Int32 nY);
 
     // The GeoStat contains the rotation and shear angles
     GeoStat maGeo;

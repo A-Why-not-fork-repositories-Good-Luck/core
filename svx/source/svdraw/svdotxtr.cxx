@@ -57,7 +57,6 @@ void SdrTextObj::NbcSetSnapRect(const tools::Rectangle& rRect)
         // No rotation or shear.
 
         setRectangle(rRect);
-        ImpJustifyRect(maRectangle);
 
         AdaptTextMinSize();
 
@@ -74,7 +73,6 @@ const tools::Rectangle& SdrTextObj::GetLogicRect() const
 void SdrTextObj::NbcSetLogicRect(const tools::Rectangle& rRect)
 {
     setRectangle(rRect);
-    ImpJustifyRect(maRectangle);
 
     AdaptTextMinSize();
 
@@ -125,7 +123,6 @@ void SdrTextObj::NbcResize(const Point& rRef, const Fraction& xFact, const Fract
         setRectangle(aRectangle);
         if (bYMirr)
         {
-            maRectangle.Normalize();
             moveRectangle(aRectangle.Right() - aRectangle.Left(), aRectangle.Bottom() - aRectangle.Top());
             maGeo.nRotationAngle=18000_deg100;
             maGeo.RecalcSinCos();
@@ -173,8 +170,6 @@ void SdrTextObj::NbcResize(const Point& rRef, const Fraction& xFact, const Fract
             maGeo.RecalcTan();
         }
     }
-
-    ImpJustifyRect(maRectangle);
 
     AdaptTextMinSize();
 
@@ -225,7 +220,6 @@ void SdrTextObj::NbcShear(const Point& rRef, Degree100 /*nAngle*/, double tn, bo
     auto aRectangle = getRectangle();
     Poly2Rect(aPol, aRectangle, maGeo);
     setRectangle(aRectangle);
-    ImpJustifyRect(maRectangle);
 
     if (mbTextFrame) {
         NbcAdjustTextFrameWidthAndHeight();
@@ -281,7 +275,6 @@ void SdrTextObj::NbcMirror(const Point& rRef1, const Point& rRef2)
         maGeo.RecalcTan();
     }
 
-    ImpJustifyRect(maRectangle);
     if (mbTextFrame) {
         NbcAdjustTextFrameWidthAndHeight();
     }
