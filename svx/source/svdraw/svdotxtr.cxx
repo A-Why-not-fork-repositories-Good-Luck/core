@@ -39,6 +39,35 @@
 
 using namespace com::sun::star;
 
+namespace
+{
+gfx::Tuple2DL rotatePoint(gfx::Tuple2DL const& rPoint, gfx::Tuple2DL const& rReference, double sinAngle, double cosAngle)
+{
+    gfx::Length dx = rPoint.getX() - rReference.getX();
+    gfx::Length dy = rPoint.getY() - rReference.getY();
+
+    auto x = rReference.getX() + gfx::Length::emu(basegfx::fround(dx.raw() * cosAngle + dy.raw() * sinAngle));
+    auto y = rReference.getY() + gfx::Length::emu(basegfx::fround(dy.raw() * cosAngle - dx.raw() * sinAngle));
+
+    return gfx::Tuple2DL(x, y);
+}
+
+gfx::Tuple2DL toTuple(Point const& rPointHmm)
+{
+    auto x = gfx::Length::hmm(rPointHmm.X());
+    auto y = gfx::Length::hmm(rPointHmm.Y());
+    return {x, y};
+}
+
+gfx::Size2DL toSize2D(Size const& rSizeHmm)
+{
+    auto x = gfx::Length::hmm(rSizeHmm.Width());
+    auto y = gfx::Length::hmm(rSizeHmm.Height());
+    return {x, y};
+}
+
+} // end anonymous ns
+
 void SdrTextObj::NbcSetSnapRect(const tools::Rectangle& rRect)
 {
     if (maGeo.nRotationAngle || maGeo.nShearAngle)
@@ -91,7 +120,9 @@ Degree100 SdrTextObj::GetShearAngle(bool /*bVertical*/) const
 
 void SdrTextObj::NbcMove(const Size& rSize)
 {
-    moveRectangle(rSize.Width(), rSize.Height());
+    gfx::Size2DL aSize2D = toSize2D(rSize);
+    maRectangle.shift(aSize2D.getWidth(), aSize2D.getHeight());
+
     moveOutRectangle(rSize.Width(), rSize.Height());
     maSnapRect.Move(rSize);
     SetBoundAndSnapRectsDirty(true);
@@ -182,27 +213,37 @@ void SdrTextObj::NbcResize(const Point& rRef, const Fraction& xFact, const Fract
     SetBoundAndSnapRectsDirty();
 }
 
-void SdrTextObj::NbcRotate(const Point& rRef, Degree100 nAngle, double sn, double cs)
+void SdrTextObj::NbcRotate(const Point& rRef, Degree100 nAngle, double sinAngle, double cosAngle)
 {
-    SetGlueReallyAbsolute(true);
-    tools::Long dx = getRectangle().Right() - getRectangle().Left();
-    tools::Long dy = getRectangle().Bottom() - getRectangle().Top();
-    Point aPoint1(getRectangle().TopLeft());
-    RotatePoint(aPoint1, rRef, sn, cs);
-    Point aPoint2(aPoint1.X() + dx, aPoint1.Y() + dy);
-    tools::Rectangle aRectangle(aPoint1, aPoint2);
-    setRectangle(aRectangle);
+    auto aReference = toTuple(rRef);
 
-    if (maGeo.nRotationAngle==0_deg100) {
-        maGeo.nRotationAngle=NormAngle36000(nAngle);
-        maGeo.mfSinRotationAngle=sn;
-        maGeo.mfCosRotationAngle=cs;
-    } else {
-        maGeo.nRotationAngle=NormAngle36000(maGeo.nRotationAngle+nAngle);
+    SetGlueReallyAbsolute(true);
+    auto const& rRange = maRectangle.getRange();
+
+    auto nWidth = rRange.getWidth();
+    auto nHeight = rRange.getHeight();
+
+    gfx::Tuple2DL aPoint1(rRange.getMinX(), rRange.getMinY());
+    aPoint1 = rotatePoint(aPoint1, aReference, sinAngle, cosAngle);
+
+    gfx::Tuple2DL aPoint2(aPoint1.getX() + nWidth, aPoint1.getY() + nHeight);
+
+    gfx::Range2DL aRange{aPoint1, aPoint2};
+    maRectangle.setRange(aRange);
+
+    if (maGeo.nRotationAngle == 0_deg100)
+    {
+        maGeo.nRotationAngle = NormAngle36000(nAngle);
+        maGeo.mfSinRotationAngle = sinAngle;
+        maGeo.mfCosRotationAngle = cosAngle;
+    }
+    else
+    {
+        maGeo.nRotationAngle = NormAngle36000(maGeo.nRotationAngle + nAngle);
         maGeo.RecalcSinCos();
     }
     SetBoundAndSnapRectsDirty();
-    NbcRotateGluePoints(rRef,nAngle,sn,cs);
+    NbcRotateGluePoints(rRef, nAngle, sinAngle, cosAngle);
     SetGlueReallyAbsolute(false);
 }
 

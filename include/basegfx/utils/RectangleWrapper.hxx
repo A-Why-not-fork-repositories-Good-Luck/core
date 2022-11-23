@@ -55,6 +55,11 @@ public:
         m_aRange.setSize(width, height);
     }
 
+    void shift(gfx::Length const& rXDelta, gfx::Length const& rYDelta)
+    {
+        m_aRange.shift(rXDelta, rYDelta);
+    }
+
     void move(sal_Int32 nXDelta, sal_Int32 nYDelta)
     {
         auto deltaX = gfx::Length::hmm(nXDelta);
